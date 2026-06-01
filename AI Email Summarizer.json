@@ -1,0 +1,151 @@
+{
+  "name": "AI Email Summarizer",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "bhavishachindra1212007@gmail.com",
+          "readStatus": "unread"
+        },
+        "options": {}
+      },
+      "id": "594f9e19-ad4b-45a6-af01-04aaa7884146",
+      "name": "When Email Received",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        304
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sGJsH0zSnSXGaoaz",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Summarize the following email in 2-3 concise bullet points:\n\nFrom: {{ $json.from }}\nSubject: {{ $json.subject }}\nDate: {{ $json.date }}\n\nContent:\n{{ $json.text }}",
+        "options": {
+          "systemMessage": "You are an expert email summarizer. Create clear, concise summaries that capture the key points and action items."
+        }
+      },
+      "id": "115aa136-e374-40ac-b9fe-2f3d6b6581c6",
+      "name": "Summarize Email",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        464,
+        304
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "ead324d0-c31f-4ac0-8d84-02afdb7f8c77",
+      "name": "OpenAI GPT-5",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        512
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "t3lKnPL4nafcESly",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "bhavishachindra1212007@gmail.com",
+        "subject": "=Summary: {{ $(\"When Email Received\").item.json.subject }}",
+        "emailType": "text",
+        "message": "=Email Summary:\n\n{{ $json.output }}\n\n---\nOriginal from: {{ $(\"When Email Received\").item.json.from }}\nReceived: {{ $(\"When Email Received\").item.json.date }}",
+        "options": {}
+      },
+      "id": "2f22e79c-341d-4604-a612-e0dd50fbac10",
+      "name": "Send Summary Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        304
+      ],
+      "webhookId": "d6a15f8f-ff7a-4c99-8d3c-2b94a23488f9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UV6CXHq4AoRGKJRn",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Email Received": {
+      "main": [
+        [
+          {
+            "node": "Summarize Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Email": {
+      "main": [
+        [
+          {
+            "node": "Send Summary Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI GPT-5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarize Email",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "14662777-b2d7-4f97-8969-7d051193ff91",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "03de541ed9e83c7b4afc313868ad888daaf01931a71863a2950050456b69b3b0"
+  },
+  "id": "TLyJeHXLIGQCL4y8",
+  "tags": []
+}
